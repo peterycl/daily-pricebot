@@ -1,0 +1,32 @@
+name: Daily PriceBot
+
+on:
+  schedule:
+    - cron: '0 18 * * *'   # 台灣時間 02:00（UTC 18:00）
+  workflow_dispatch:
+
+jobs:
+  run-pricebot:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install deps
+        run: |
+          pip install -r requirements.txt
+          playwright install --with-deps
+
+      - name: Run pricebot
+        env:
+          GOOGLE_SA_JSON_B64: ${{ secrets.GOOGLE_SA_JSON_B64 }}
+          DRIVE_FOLDER_ID: ${{ secrets.DRIVE_FOLDER_ID }}
+          TZ: Asia/Taipei
+          HORIZON_DAYS: 90
+        run: python run_pricebot.py
